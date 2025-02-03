@@ -14,13 +14,14 @@ internal class Install {
         provider.RegisterApp();
         Console.WriteLine("PStore registered!");
 
-        Console.WriteLine("Would you like to unregister the app? (yes/no/all)");
+        Console.WriteLine("Would you like to unregister the app? (yes/[no]/all)");
         string? response = Console.ReadLine();
-        if (response?.ToLower() == "yes") {
+        if (response?.ToLower() is "yes" or "y") {
             provider.UnregisterApp();
             Console.WriteLine("PStore unregistered!");
-        } else if (response?.ToLower() == "all") {
+        } else if (response?.ToLower() is "all" or "a") {
             RegSyncProvider.UnregisterAll();
             Console.WriteLine("All PStore apps unregistered!");
         }
+    }
 }
