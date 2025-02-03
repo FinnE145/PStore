@@ -3,7 +3,7 @@ using System;
 
 namespace PStore.Provider;
 
-class RegSyncProvider {
+class ProviderRegistrar {
     /* Registry commands to run (from https://learn.microsoft.com/en-us/windows/win32/shell/integrate-cloud-storage):
         reg add HKCU\Software\Classes\CLSID\{0672A6D1-A6E0-40FE-AB16-F25BADC6D9E3} /ve /t REG_SZ /d "MyCloudStorageApp" /f
         reg add HKCU\Software\Classes\CLSID\{0672A6D1-A6E0-40FE-AB16-F25BADC6D9E3}\DefaultIcon /ve /t REG_EXPAND_SZ /d %%SystemRoot%%\system32\imageres.dll,-1043 /f

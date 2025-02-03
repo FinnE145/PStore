@@ -10,7 +10,7 @@ namespace PStore;
 internal class Install {
     public static void Main() {
         Console.WriteLine("Registering PStore...");
-        RegSyncProvider provider = new();
+        ProviderRegistrar provider = new();
         provider.RegisterApp();
         Console.WriteLine("PStore registered!");
 
@@ -20,7 +20,7 @@ internal class Install {
             provider.UnregisterApp();
             Console.WriteLine("PStore unregistered!");
         } else if (response?.ToLower() is "all" or "a") {
-            RegSyncProvider.UnregisterAll();
+            ProviderRegistrar.UnregisterAll();
             Console.WriteLine("All PStore apps unregistered!");
         }
     }

@@ -5,6 +5,6 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-[assembly: SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "It's a windows app", Scope = "member", Target = "~M:PStore.Provider.RegSyncProvider.RegisterApp")]
-[assembly: SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "It's a windows app", Scope = "member", Target = "~M:PStore.Provider.RegSyncProvider.UnregisterApp")]
-[assembly: SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "It's a windows app", Scope = "member", Target = "~M:PStore.Provider.RegSyncProvider.UnregisterAll")]
+[assembly: SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "It's a windows app", Scope = "member", Target = "~M:PStore.Provider.ProviderRegistrar.RegisterApp")]
+[assembly: SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "It's a windows app", Scope = "member", Target = "~M:PStore.Provider.ProviderRegistrar.UnregisterApp")]
+[assembly: SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "It's a windows app", Scope = "member", Target = "~M:PStore.Provider.ProviderRegistrar.UnregisterAll")]
