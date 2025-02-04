@@ -1,0 +1,6 @@
+﻿CfCreatePlaceholders
+CF_PLACEHOLDER_CREATE_INFO
+PCWSTR
+S_OK
+CfRegisterSyncRoot
+CfUnregisterSyncRoot
