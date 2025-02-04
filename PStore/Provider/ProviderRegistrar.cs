@@ -1,5 +1,4 @@
 using Microsoft.Win32;
-using System;
 
 namespace PStore.Provider;
 
@@ -21,17 +20,6 @@ class ProviderRegistrar {
 
     public string? CLSID { get; private set; }
 
-    private static string[] GetCLSIDs() {
-        return System.IO.File.ReadAllLines("CLSIDs.txt");
-    }
-
-    private static void AddCLSID(string clsid) {
-        string[] clsids = GetCLSIDs();
-        Array.Resize(ref clsids, clsids.Length + 1);
-        clsids[^1] = clsid;
-        System.IO.File.WriteAllLines("CLSIDs.txt", clsids);
-    }
-
     public void RegisterApp() {
         string UserPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         this.CLSID = $"{{{Guid.NewGuid()}}}";                                  // Generated GUID
@@ -40,8 +28,6 @@ class ProviderRegistrar {
         string HostDll = "C:\\Windows\\System32\\shell32.dll";                 // Generic shell prodiver
         string InstanceCLSID = "{0E5AAE11-A475-4c5b-AB00-C66DE400274E}";       // CLSID for generic folder? maybe? - same one that OneDrive uses, not quite sure what it is exactly
         string TargetFolderPath = $@"{UserPath}\PStore";
-
-        AddCLSID(this.CLSID);
 
         using (RegistryKey key = Registry.CurrentUser.CreateSubKey($@"Software\Classes\CLSID\{this.CLSID}")) {
             key.SetValue("", AppName, RegistryValueKind.String);
@@ -70,19 +56,36 @@ class ProviderRegistrar {
             return;
         }
 
-        Registry.CurrentUser.DeleteSubKeyTree($@"Software\Classes\CLSID\{this.CLSID}");
-        Registry.CurrentUser.DeleteSubKey($@"Software\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\{this.CLSID}");
-        using RegistryKey? key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel", true);
-        key?.DeleteValue(this.CLSID, false);
+        try {
+            Registry.CurrentUser.DeleteSubKeyTree($@"Software\Classes\CLSID\{this.CLSID}");
+            Registry.CurrentUser.DeleteSubKey($@"Software\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\{this.CLSID}");
+            using RegistryKey? key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel", true);
+            key?.DeleteValue(this.CLSID, false);
+        } catch {
+            Console.WriteLine($"Failed to unregister the PStore instance.");
+        }
     }
 
     public static void UnregisterAll() {
-        string[] clsids = GetCLSIDs();
-        foreach (string clsid in clsids) {
-            Registry.CurrentUser.DeleteSubKeyTree($@"Software\Classes\CLSID\{clsid}");
-            Registry.CurrentUser.DeleteSubKey($@"Software\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\{clsid}");
-            using RegistryKey? key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel", true);
-            key?.DeleteValue(clsid, false);
+        int c = 0;
+        using (RegistryKey? CLSIDKey = Registry.CurrentUser.OpenSubKey("Software\\Classes\\CLSID", true)) {
+            foreach (string key in CLSIDKey?.GetSubKeyNames() ?? []) {
+                if (key.StartsWith('{')) {
+                    try {
+                        using RegistryKey? subkey = CLSIDKey?.OpenSubKey(key);
+                        if (subkey?.GetValue("")?.ToString() == "PStore") {
+                            CLSIDKey?.DeleteSubKeyTree(key);
+                            Registry.CurrentUser.DeleteSubKey($@"Software\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\{key}");
+                            using RegistryKey? nkey = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel", true);
+                            nkey?.DeleteValue(key, false);
+                            c++;
+                        }
+                    } catch (Exception ex) {
+                        Console.WriteLine($"Failed to check/unregister {key}: {ex.Message}");
+                    }
+                }
+            }
         }
+        Console.WriteLine(value: $"Unregistered {c} PStore instance(s) from this user.");
     }
 }
