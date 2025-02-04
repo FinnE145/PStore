@@ -5,6 +5,4 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-[assembly: SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "It's a windows app", Scope = "member", Target = "~M:PStore.Provider.ProviderRegistrar.RegisterApp")]
-[assembly: SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "It's a windows app", Scope = "member", Target = "~M:PStore.Provider.ProviderRegistrar.UnregisterApp")]
-[assembly: SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "It's a windows app", Scope = "member", Target = "~M:PStore.Provider.ProviderRegistrar.UnregisterAll")]
+//[assembly: SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "It is exclusively for windows", Scope = "namespaceanddescendants", Target = "~N:PStore.Provider")]
