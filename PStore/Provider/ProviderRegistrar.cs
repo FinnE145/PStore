@@ -1,4 +1,7 @@
 using Microsoft.Win32;
+using Windows.Win32;
+using Windows.Win32.Storage.CloudFilters;
+using Windows.Win32.Foundation;
 
 namespace PStore.Provider;
 
@@ -20,7 +23,7 @@ class ProviderRegistrar {
 
     public string? CLSID { get; private set; }
 
-    public void RegisterApp() {
+    public void RegRegister() {
         string UserPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         this.CLSID = $"{{{Guid.NewGuid()}}}";                                  // Generated GUID
         string AppName = "PStore";                                             // Name of the app
@@ -51,7 +54,7 @@ class ProviderRegistrar {
         }
     }
 
-    public void UnregisterApp() {
+    public void RegUnregister() {
         if (this.CLSID == null) {
             return;
         }
@@ -66,7 +69,7 @@ class ProviderRegistrar {
         }
     }
 
-    public static void UnregisterAll() {
+    public static void RegUnregisterAll() {
         int c = 0;
         using (RegistryKey? CLSIDKey = Registry.CurrentUser.OpenSubKey("Software\\Classes\\CLSID", true)) {
             foreach (string key in CLSIDKey?.GetSubKeyNames() ?? []) {
@@ -87,5 +90,46 @@ class ProviderRegistrar {
             }
         }
         Console.WriteLine(value: $"Unregistered {c} PStore instance(s) from this user.");
+    }
+
+    public static void Register(string syncRootPath, string providerName, string providerVersion) {
+        unsafe {
+            fixed (char* syncRootPathP = syncRootPath, providerNameP = providerName, providerVersionP = providerVersion) {
+                CF_SYNC_REGISTRATION SyncReg = new() {
+                    ProviderName = new PCWSTR(providerNameP),
+                    ProviderVersion = new PCWSTR(providerVersionP),
+                    SyncRootIdentity = (void*) IntPtr.Zero,
+                    SyncRootIdentityLength = (uint) 0,
+                    FileIdentity = (void*) IntPtr.Zero,
+                    FileIdentityLength = (uint) 0,
+                    ProviderId = Guid.NewGuid()
+                };
+
+                CF_SYNC_POLICIES SyncPol = new() {
+                    Hydration = new CF_HYDRATION_POLICY { Primary = CF_HYDRATION_POLICY_PRIMARY.CF_HYDRATION_POLICY_FULL, Modifier = CF_HYDRATION_POLICY_MODIFIER.CF_HYDRATION_POLICY_MODIFIER_AUTO_DEHYDRATION_ALLOWED },
+                    Population = new CF_POPULATION_POLICY { Primary = CF_POPULATION_POLICY_PRIMARY.CF_POPULATION_POLICY_FULL, Modifier = CF_POPULATION_POLICY_MODIFIER.CF_POPULATION_POLICY_MODIFIER_NONE },
+                    InSync = CF_INSYNC_POLICY.CF_INSYNC_POLICY_NONE,
+                    HardLink = CF_HARDLINK_POLICY.CF_HARDLINK_POLICY_NONE,
+                    PlaceholderManagement = CF_PLACEHOLDER_MANAGEMENT_POLICY.CF_PLACEHOLDER_MANAGEMENT_POLICY_DEFAULT,
+                };
+
+                Utilities.Win32FuncRes(
+                    PInvoke.CfRegisterSyncRoot(
+                        syncRootPath,
+                        SyncReg,
+                        SyncPol,
+                        CF_REGISTER_FLAGS.CF_REGISTER_FLAG_NONE
+                    ),
+                    "Failed to register PStore"
+                );
+
+                //Utilities.Win32Function((Func<string, CF_SYNC_REGISTRATION, CF_SYNC_POLICIES, CF_REGISTER_FLAGS, HRESULT>) PInvoke.CfRegisterSyncRoot, syncRootPath, SyncReg, SyncPol, CF_REGISTER_FLAGS.CF_REGISTER_FLAG_NONE);
+            }
+        }
+    }
+
+
+    public static void Unregister(string syncRootPath) {
+        Utilities.Win32FuncRes(PInvoke.CfUnregisterSyncRoot(syncRootPath), "Failed to unregister PStore");
     }
 }
